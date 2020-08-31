@@ -1,0 +1,16 @@
+{
+  "name": "template-ss-generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "serve": "serve -l 1234"
+  },
+  "dependencies": {
+    "puppeteer": "^5.2.1",
+    "sharp": "^0.26.0"
+  },
+  "devDependencies": {
+    "serve": "^11.3.2"
+  }
+}
