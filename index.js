@@ -103,10 +103,24 @@ const getFormScreenshot = async ({formID}) => {
         '200772726817056',  // example 5 : color background, color form
         '21413914171344',   // example 6 : default background, color form
         '21092334609349',   // example 7 : default background, color form ??????????
-        '20575198773162'    // example 8 : default background, color form
+        '20575198773162',   // example 8 : default background, color form
+        '21224672668255',
+        '90381893295468',
+        // '40301708378957',
+        '201173375469055'
     ];
     
-    const results = await Promise.all(formIDs.map(formID => getFormScreenshot({formID})));
+    let results = [];
+    
+    for (let i = 0; i < formIDs.length; i++) {
+        try {
+            const result = await getFormScreenshot({formID: formIDs[i]});
+            results.push(result);
+        } catch (err) {
+            console.error(err);
+            process.exit(1);
+        }
+    }
     
     // TODO: send results and upload files
     await fsPromises.writeFile('results.js', 'window.results = ' + JSON.stringify(results, null, 2));
