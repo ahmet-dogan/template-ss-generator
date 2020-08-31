@@ -2,10 +2,10 @@ const puppeteer = require('puppeteer');
 const sharp = require('sharp');
 const fsPromises = require('fs').promises;
 
-const openFormPage = async ({formID}) => {
+const openFormPage = async ({browser, formID}) => {
     const formUrl = 'https://www.jotform.com/' + formID;
-    const browser = await puppeteer.launch();
     const page = await browser.newPage();
+    await page.setCacheEnabled(true);
     await page.goto(formUrl, {waitUntil: 'networkidle0'});
     return {page, browser};
 };
@@ -56,6 +56,11 @@ const getFormAreaScreenshot = async ({page, backgroundType, background, formID})
         document.querySelector('.jotform-form').style.display = null;
         document.body.style.background = 'transparent';
         document.querySelector('html').style.background = 'transparent';
+        
+        // clear border and shadow styles
+        document.querySelector('.form-all').style.setProperty('border-radius', '0', 'important');
+        document.querySelector('.form-all').style.setProperty('border', '0', 'important');
+        document.querySelector('.form-all').style.setProperty('box-shadow', 'none', 'important');
     });
     
     const form = await page.$('.form-all');
@@ -66,17 +71,17 @@ const getFormAreaScreenshot = async ({page, backgroundType, background, formID})
     
     await sharp(formImageBuffer)
         .resize({width: 296})
-        .png()
+        .png({progressive: true})
         .toFile(formSsFileName);
     
     return formSsFileName;
 };
 
-const getFormScreenshot = async ({formID}) => {
+const getFormScreenshot = async ({browser, formID}) => {
     const tic = new Date();
     console.log('[' + formID + '] Started');
     
-    const {page, browser} = await openFormPage({formID});
+    const {page} = await openFormPage({browser, formID});
     console.log('[' + formID + '] Page ready');
     
     const {background, backgroundType} = await getFormBackground({page, formID});
@@ -85,7 +90,7 @@ const getFormScreenshot = async ({formID}) => {
     const form = await getFormAreaScreenshot({page, backgroundType, background, formID});
     console.log('[' + formID + '] Form screenshot ready');
     
-    await browser.close();
+    await page.close();
     console.log('[' + formID + '] Done');
     
     const processTime = new Date() - tic;
@@ -95,6 +100,8 @@ const getFormScreenshot = async ({formID}) => {
 };
 
 (async () => {
+    const browser = await puppeteer.launch({headless: true});
+    
     const formIDs = [
         '20903075693455',   // example 1 : image background, transparent form
         '20853367294460',   // example 2 : image background, transparent form
@@ -106,24 +113,30 @@ const getFormScreenshot = async ({formID}) => {
         '20575198773162',   // example 8 : default background, color form
         '21224672668255',
         '90381893295468',
-        // '40301708378957',
+        '40301708378957',   // TODO: broken
         '201173375469055'
     ];
     
     let results = [];
     
+    // TODO: run parallel
     for (let i = 0; i < formIDs.length; i++) {
+        const formID = formIDs[i];
         try {
-            const result = await getFormScreenshot({formID: formIDs[i]});
+            const result = await getFormScreenshot({browser, formID});
             results.push(result);
         } catch (err) {
+            console.error('[' + formID + '] Failed!');
             console.error(err);
-            process.exit(1);
         }
     }
+    
+    await browser.close();
     
     // TODO: send results and upload files
     await fsPromises.writeFile('results.js', 'window.results = ' + JSON.stringify(results, null, 2));
     
     // TODO: remove files
+    
+    process.exit(0);
 })();

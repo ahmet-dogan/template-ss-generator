@@ -212,9 +212,15 @@ body {
     margin: 60px 40px;
 }
 
+.template-wrapper{
+    height: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 2px 6px 0 rgba(0,0,0,0.30), 0 24px 20px -6px rgba(0,0,0,0.08);
+    -moz-box-shadow: 0 2px 6px 0 rgba(0,0,0,0.30), 0 24px 20px -6px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 6px 0 rgba(0,0,0,0.30), 0 24px 20px -6px rgba(0,0,0,0.08);
+}
+
 .template-form {
-    border-radius: 6px;
-    -webkit-box-shadow: 0px 1px 6px 0px rgba(0,0,0,0.2);
-    -moz-box-shadow: 0px 1px 6px 0px rgba(0,0,0,0.2);
-    box-shadow: 0px 1px 6px 0px rgba(0,0,0,0.2);
+    width: 296px;
 }

@@ -4,7 +4,10 @@ var defaultColors = ['rgba(0, 0, 0, 0)', 'rgb(245, 245, 245)', 'rgb(255, 255, 25
 $.each(window.results, function (i, result) {
     var $backgroundEl = $('<div class="template-bg"></div>');
     var backgroundEl = $backgroundEl.get(0);
-    $backgroundEl.append($('<img class="template-form" src="../' + result.form + '" alt=""/>'));
+    var $wrapperEl = $('<div class="template-wrapper"></div>');
+    var wrapperEl = $wrapperEl.get(0);
+    $backgroundEl.append($wrapperEl);
+    $wrapperEl.append($('<img class="template-form" src="../' + result.form + '" alt=""/>'));
     $('#container').append($backgroundEl);
     
     if (result.backgroundType === 'image') {
@@ -18,16 +21,16 @@ $.each(window.results, function (i, result) {
     }
     
     $backgroundEl.mouseenter(function () {
-        var maxScrollTop = backgroundEl.scrollHeight - backgroundEl.clientHeight;
-        backgroundEl.scroll({top: maxScrollTop, behavior: 'smooth'});
+        var maxScrollTop = wrapperEl.scrollHeight - wrapperEl.clientHeight;
+        wrapperEl.scroll({top: maxScrollTop, behavior: 'smooth'});
     });
     
     $backgroundEl.mouseleave(function () {
-        backgroundEl.scroll({top: 0, behavior: 'smooth'});
+        wrapperEl.scroll({top: 0, behavior: 'smooth'});
     });
     
     backgroundEl.addEventListener('wheel', function (event) {
         event.preventDefault();
-        backgroundEl.scroll({top: backgroundEl.scrollTop + (5 * event.deltaY)});
+        wrapperEl.scroll({top: wrapperEl.scrollTop + (5 * event.deltaY)});
     });
 });
