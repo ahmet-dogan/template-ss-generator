@@ -153,6 +153,8 @@ const getFormScreenshots = async ({formIDs, browser, chunkSize = 5}) => {
         '21413914171344',   // example 6 : default background, color form
         '21092334609349',   // example 7 : default background, color form ??????????
         '20575198773162',   // example 8 : default background, color form
+        '93034998944978',
+        '93101184159958',
         '21224672668255',
         '90381893295468',
         '40301708378957',   // TODO: broken
