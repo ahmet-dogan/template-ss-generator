@@ -11,92 +11,134 @@ const openFormPage = async ({browser, formID}) => {
 };
 
 const getFormBackground = async ({page, formID}) => {
-    const backgroundFileName = formID + '-bg.jpg';
-    let background, backgroundType;
-    
-    const {backgroundImage, backgroundColor} = await page.evaluate(() => {
-        var backgroundColor = window.getComputedStyle(document.querySelector('body')).backgroundColor;
-        if (backgroundColor === 'rgba(0, 0, 0, 0)') {
-            backgroundColor = window.getComputedStyle(document.querySelector('html')).backgroundColor;
-        }
+    try {
+        const backgroundFileName = formID + '-bg.jpg';
+        let background, backgroundType;
         
-        return {
-            backgroundImage: window.getComputedStyle(document.querySelector('html')).backgroundImage,
-            backgroundColor: backgroundColor
-        }
-    });
-    
-    if (backgroundImage !== 'none') {
-        await page.evaluate(() => {
-            document.querySelector('.jotform-form').style.display = 'none';
+        const {backgroundImage, backgroundColor} = await page.evaluate(() => {
+            var backgroundColor = window.getComputedStyle(document.querySelector('body')).backgroundColor;
+            if (backgroundColor === 'rgba(0, 0, 0, 0)') {
+                backgroundColor = window.getComputedStyle(document.querySelector('html')).backgroundColor;
+            }
+            
+            return {
+                backgroundImage: window.getComputedStyle(document.querySelector('html')).backgroundImage,
+                backgroundColor: backgroundColor
+            }
         });
-        const htmlElement = await page.$('html');
-        const backgroundImageBuffer = await htmlElement.screenshot();
-        await sharp(backgroundImageBuffer)
-            .resize({
-                width: 340,
-                height: 254
-            })
-            .jpeg()
-            .toFile(backgroundFileName);
         
-        background = backgroundFileName;
-        backgroundType = 'image';
-    } else {
-        background = backgroundColor;
-        backgroundType = 'color';
+        if (backgroundImage !== 'none') {
+            await page.evaluate(() => {
+                document.querySelector('.jotform-form').style.display = 'none';
+            });
+            const htmlElement = await page.$('html');
+            const backgroundImageBuffer = await htmlElement.screenshot();
+            await sharp(backgroundImageBuffer)
+                .resize({
+                    width: 340,
+                    height: 254
+                })
+                .jpeg()
+                .toFile(backgroundFileName);
+            
+            background = backgroundFileName;
+            backgroundType = 'image';
+        } else {
+            background = backgroundColor;
+            backgroundType = 'color';
+        }
+        
+        return {background, backgroundType};
+    } catch (err) {
+        console.error(err);
+        return null;
     }
-    
-    return {background, backgroundType};
 };
 
 const getFormAreaScreenshot = async ({page, backgroundType, background, formID}) => {
-    const formSsFileName = formID + '-form.png';
-    await page.evaluate(() => {
-        document.querySelector('.jotform-form').style.display = null;
-        document.body.style.background = 'transparent';
-        document.querySelector('html').style.background = 'transparent';
+    try {
+        const formSsFileName = formID + '-form.png';
+        await page.evaluate(() => {
+            document.querySelector('.jotform-form').style.display = null;
+            document.body.style.background = 'transparent';
+            document.querySelector('html').style.background = 'transparent';
+            
+            // clear border and shadow styles
+            document.querySelector('.form-all').style.setProperty('border-radius', '0', 'important');
+            document.querySelector('.form-all').style.setProperty('border', '0', 'important');
+            document.querySelector('.form-all').style.setProperty('box-shadow', 'none', 'important');
+        });
         
-        // clear border and shadow styles
-        document.querySelector('.form-all').style.setProperty('border-radius', '0', 'important');
-        document.querySelector('.form-all').style.setProperty('border', '0', 'important');
-        document.querySelector('.form-all').style.setProperty('box-shadow', 'none', 'important');
-    });
-    
-    const form = await page.$('.form-all');
-    
-    const formImageBuffer = await form.screenshot({
-        omitBackground: (backgroundType === 'image') || (background !== 'rgba(0, 0, 0, 0)')
-    });
-    
-    await sharp(formImageBuffer)
-        .resize({width: 296})
-        .png({progressive: true})
-        .toFile(formSsFileName);
-    
-    return formSsFileName;
+        const form = await page.$('.form-all');
+        
+        const formImageBuffer = await form.screenshot({
+            omitBackground: (backgroundType === 'image') || (background !== 'rgba(0, 0, 0, 0)')
+        });
+        
+        await sharp(formImageBuffer)
+            .resize({width: 296 * 2})
+            .png({progressive: true})
+            .toFile(formSsFileName);
+        
+        return formSsFileName;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
 };
 
 const getFormScreenshot = async ({browser, formID}) => {
-    const tic = new Date();
-    console.log('[' + formID + '] Started');
+    try {
+        const tic = new Date();
+        console.log('[' + formID + '] Started');
+        
+        const {page} = await openFormPage({browser, formID});
+        console.log('[' + formID + '] Page ready');
+        
+        const formBackground = await getFormBackground({page, formID});
+        if (!formBackground) {
+            await page.close();
+            return null;
+        }
+        const {background, backgroundType} = formBackground;
+        console.log('[' + formID + '] Background ready');
+        
+        const form = await getFormAreaScreenshot({page, backgroundType, background, formID});
+        if (!form) {
+            await page.close();
+            return null;
+        }
+        console.log('[' + formID + '] Form screenshot ready');
+        
+        await page.close();
+        console.log('[' + formID + '] Done');
+        
+        const processTime = new Date() - tic;
+        console.log('[' + formID + '] Process time: ' + processTime + 'ms');
+        
+        return {background, backgroundType, form, processTime};
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+};
+
+const arrayToChunks = (arr, size) => {
+    let arrs = [];
+    for (let i = 0; i < arr.length; i += size) {
+        arrs.push(arr.slice(i, i + size));
+    }
+    return arrs;
+};
+
+const getFormScreenshots = async ({formIDs, browser, chunkSize = 5}) => {
+    let results = [];
     
-    const {page} = await openFormPage({browser, formID});
-    console.log('[' + formID + '] Page ready');
+    for (let i = 0, chunks = arrayToChunks(formIDs, chunkSize); i < chunks.length; i++) {
+        results.push(await Promise.all(chunks[i].map(formID => getFormScreenshot({browser, formID}))));
+    }
     
-    const {background, backgroundType} = await getFormBackground({page, formID});
-    console.log('[' + formID + '] Background ready');
-    
-    const form = await getFormAreaScreenshot({page, backgroundType, background, formID});
-    console.log('[' + formID + '] Form screenshot ready');
-    
-    await page.close();
-    console.log('[' + formID + '] Done');
-    
-    const processTime = new Date() - tic;
-    console.log('[' + formID + '] Process time: ' + processTime + 'ms');
-    
-    return {background, backgroundType, form, processTime};
+    return results.reduce((acc, result) => acc.concat(result), []);
 };
 
 (async () => {
@@ -117,19 +159,9 @@ const getFormScreenshot = async ({browser, formID}) => {
         '201173375469055'
     ];
     
-    let results = [];
+    // TODO: get all configs
     
-    // TODO: run parallel
-    for (let i = 0; i < formIDs.length; i++) {
-        const formID = formIDs[i];
-        try {
-            const result = await getFormScreenshot({browser, formID});
-            results.push(result);
-        } catch (err) {
-            console.error('[' + formID + '] Failed!');
-            console.error(err);
-        }
-    }
+    const results = await getFormScreenshots({formIDs, browser});
     
     await browser.close();
     

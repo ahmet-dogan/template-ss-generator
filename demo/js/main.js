@@ -5,9 +5,16 @@ $.each(window.results, function (i, result) {
     var $backgroundEl = $('<div class="template-bg"></div>');
     var backgroundEl = $backgroundEl.get(0);
     var $wrapperEl = $('<div class="template-wrapper"></div>');
-    var wrapperEl = $wrapperEl.get(0);
+    var getInitialBottomOfImage = function (image) {
+        var $wrapperEl = $(image).closest('.template-wrapper');
+        return $wrapperEl.height() - image.getBoundingClientRect().height;
+    };
+    var onImgLoaded = function () {
+        this.style.bottom = getInitialBottomOfImage(this) + 'px';
+    };
+    var $image = $('<img class="template-form" src="../' + result.form + '" alt="" />').load(onImgLoaded);
     $backgroundEl.append($wrapperEl);
-    $wrapperEl.append($('<img class="template-form" src="../' + result.form + '" alt=""/>'));
+    $wrapperEl.append($image);
     $('#container').append($backgroundEl);
     
     if (result.backgroundType === 'image') {
@@ -21,16 +28,28 @@ $.each(window.results, function (i, result) {
     }
     
     $backgroundEl.mouseenter(function () {
-        var maxScrollTop = wrapperEl.scrollHeight - wrapperEl.clientHeight;
-        wrapperEl.scroll({top: maxScrollTop, behavior: 'smooth'});
+        var $currentImage = $(this).find('img');
+        var firstBottom = getInitialBottomOfImage($currentImage[0]);
+        $currentImage.stop().animate({bottom: '0'}, 2000, function () {
+            setTimeout(function () {
+                $currentImage.animate({bottom: firstBottom}, 2000);
+            }, 2000);
+        });
     });
     
     $backgroundEl.mouseleave(function () {
-        wrapperEl.scroll({top: 0, behavior: 'smooth'});
+        var $currentImage = $(this).find('img');
+        var firstBottom = getInitialBottomOfImage($currentImage[0]);
+        $currentImage.stop().animate({bottom: firstBottom}, 500);
     });
     
     backgroundEl.addEventListener('wheel', function (event) {
         event.preventDefault();
-        wrapperEl.scroll({top: wrapperEl.scrollTop + (5 * event.deltaY)});
+        var $currentImage = $(this).find('img');
+        var bottomValue = parseFloat($currentImage.stop().css('bottom').slice(0, -2));
+        var calculatedBottomValue = bottomValue + (3 * event.deltaY);
+        calculatedBottomValue = calculatedBottomValue > 0 ? 0 : calculatedBottomValue;
+        calculatedBottomValue = calculatedBottomValue < getInitialBottomOfImage($currentImage[0]) ? getInitialBottomOfImage($currentImage[0]) : calculatedBottomValue;
+        $currentImage.css({bottom: calculatedBottomValue + 'px'});
     });
 });

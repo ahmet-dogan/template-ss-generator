@@ -213,6 +213,7 @@ body {
 }
 
 .template-wrapper{
+    position: relative;
     height: 100%;
     overflow: hidden;
     border-radius: 4px;
@@ -222,5 +223,6 @@ body {
 }
 
 .template-form {
+    position: absolute;
     width: 296px;
 }
