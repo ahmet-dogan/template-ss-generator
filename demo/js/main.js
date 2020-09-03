@@ -21,13 +21,15 @@ var calculateDuration = function (image, direction) {
 };
 
 $.each(window.results, function (i, result) {
+    var $a = $('<a href="https://www.jotform.com/' + result.formID + '" target="_blank"></a>');
     var $backgroundEl = $('<div class="template-bg"></div>');
     var backgroundEl = $backgroundEl.get(0);
     var $wrapperEl = $('<div class="template-wrapper"></div>');
     var $image = $('<img class="template-form" src="../' + result.form + '" alt="" />').load(onImgLoaded);
+    $a.append($backgroundEl);
     $backgroundEl.append($wrapperEl);
     $wrapperEl.append($image);
-    $('#container').append($backgroundEl);
+    $('#container').append($a);
     
     if (result.backgroundType === 'image') {
         $backgroundEl.css('background-image', 'url(../' + result.background + ')');

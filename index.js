@@ -116,7 +116,7 @@ const getFormScreenshot = async ({browser, formID}) => {
         const processTime = new Date() - tic;
         console.log('[' + formID + '] Process time: ' + processTime + 'ms');
         
-        return {background, backgroundType, form, processTime};
+        return {background, backgroundType, form, processTime, formID};
     } catch (err) {
         console.error(err);
         return null;
