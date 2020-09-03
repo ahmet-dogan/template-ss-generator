@@ -138,7 +138,7 @@ const getFormScreenshots = async ({formIDs, browser, chunkSize = 5}) => {
         results.push(await Promise.all(chunks[i].map(formID => getFormScreenshot({browser, formID}))));
     }
     
-    return results.reduce((acc, result) => acc.concat(result), []);
+    return results.reduce((acc, result) => acc.concat(result), []).filter(r => r);
 };
 
 (async () => {
