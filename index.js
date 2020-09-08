@@ -145,16 +145,17 @@ const getFormScreenshots = async ({formIDs, browser, chunkSize = 5}) => {
     const browser = await puppeteer.launch({headless: true});
     
     const formIDs = [
-        '20903075693455',   // example 1 : image background, transparent form
-        '20853367294460',   // example 2 : image background, transparent form
-        '20864245705555',   // example 3 : image background, transparent form
-        '21121721295444',   // example 4 : default background, color form
-        '200772726817056',  // example 5 : color background, color form
-        '21413914171344',   // example 6 : default background, color form
-        '21092334609349',   // example 7 : default background, color form ??????????
-        '20575198773162',   // example 8 : default background, color form
+        '20903075693455',
+        '20853367294460',
+        '20864245705555',
+        '21121721295444',
+        '200772726817056',
+        '21413914171344',
+        '21092334609349',
+        '20575198773162',
         '93034998944978',
         '93101184159958',
+        '200627186758362',
         '21224672668255',
         '90381893295468',
         '40301708378957',   // TODO: broken
