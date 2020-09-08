@@ -1,6 +1,6 @@
 var colorList = ["#FFCFA4", "#FFD8CF", "#FDDAF3", "#E0D2FF", "#C3F0EB", "#D7EFFC", "#DAF5C9", "#EDE8C3", "#FAD5B4", "#DEE5F2", "#B2E1EF", "#FFE1D0", "#F4CBFF", "#DEE3FF", "#F1E2B3", "#C5DCFF", "#BEEEC0", "#D5D3FF", "#FFC7C7", "#FFDF8C", "#FFEBB3", "#EDE2FE", "#FEE2D5", "#D0F0FD", "#FFBDC7", "#BFBCFF", "#FFE189", "#D1F7C4", "#B5F2EB", "#F8DCD6", "#FFC59E", "#AEE5FF"];
 var defaultColors = ['rgba(0, 0, 0, 0)', 'rgb(245, 245, 245)', 'rgb(255, 255, 255)'];
-var speed = 0.25;
+var defaultSpeed = 0.25;
 
 var getInitialBottomOfImage = function (image) {
     var $wrapperEl = $(image).closest('.template-wrapper');
@@ -9,13 +9,13 @@ var getInitialBottomOfImage = function (image) {
 var onImgLoaded = function () {
     this.style.bottom = getInitialBottomOfImage(this) + 'px';
 };
-var calculateMaxDuration = function (image) {
-    return image.getBoundingClientRect().height / speed;
+var calculateMaxDuration = function (image, speed) {
+    return image.getBoundingClientRect().height / (speed || defaultSpeed);
 };
-var calculateDuration = function (image, direction) {
+var calculateDuration = function (image, direction, speed) {
     var imageHeight = image.getBoundingClientRect().height;
     var currentBottom = Math.abs(parseFloat(image.style.bottom.slice(0, -2)));
-    var maxDuration = calculateMaxDuration(image);
+    var maxDuration = calculateMaxDuration(image, speed);
     var dx = direction === 'up' ? imageHeight - currentBottom : currentBottom;
     return Math.floor((dx * maxDuration) / imageHeight);
 };
@@ -63,7 +63,7 @@ $.each(window.results, function (i, result) {
         var $currentImage = $(this).find('img');
         var currentImage = $currentImage[0];
         var firstBottom = getInitialBottomOfImage(currentImage);
-        var duration = calculateDuration(currentImage, 'up');
+        var duration = calculateDuration(currentImage, 'up', defaultSpeed * 2);
         $currentImage.stop().animate({bottom: firstBottom}, duration, 'linear');
     });
     

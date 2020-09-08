@@ -1,20 +1,20 @@
 var colorList = ["#FFCFA4", "#FFD8CF", "#FDDAF3", "#E0D2FF", "#C3F0EB", "#D7EFFC", "#DAF5C9", "#EDE8C3", "#FAD5B4", "#DEE5F2", "#B2E1EF", "#FFE1D0", "#F4CBFF", "#DEE3FF", "#F1E2B3", "#C5DCFF", "#BEEEC0", "#D5D3FF", "#FFC7C7", "#FFDF8C", "#FFEBB3", "#EDE2FE", "#FEE2D5", "#D0F0FD", "#FFBDC7", "#BFBCFF", "#FFE189", "#D1F7C4", "#B5F2EB", "#F8DCD6", "#FFC59E", "#AEE5FF"];
 var defaultColors = ['rgba(0, 0, 0, 0)', 'rgb(245, 245, 245)', 'rgb(255, 255, 255)'];
-var speed = 0.25;
+var defaultSpeed = 0.25;
 
 var getTopValueOfBottomOfElement = function ($element) {
     var $wrapperEl = $element.closest('.template-wrapper');
     return ($element.height() - $wrapperEl.height()) * -1;
 };
 
-var calculateMaxDuration = function ($element) {
-    return $element.height() / speed;
+var calculateMaxDuration = function ($element, speed) {
+    return $element.height() / (speed || defaultSpeed);
 };
 
-var calculateDuration = function ($element, direction) {
+var calculateDuration = function ($element, direction, speed) {
     var elementHeight = $element.height();
     var currentTop = Math.abs(parseFloat($element.css('top').slice(0, -2)));
-    var maxDuration = calculateMaxDuration($element);
+    var maxDuration = calculateMaxDuration($element, speed);
     var dx = direction === 'up' ? currentTop : elementHeight - currentTop;
     return Math.floor((dx * maxDuration) / elementHeight);
 };
@@ -79,7 +79,7 @@ $.each(window.results, function (i, result) {
         $this.attr('stop-animation', true);
         var $scrollEl = $this.find('.template-content');
         var $currentLogo = $this.find('.template-logo');
-        var duration = calculateDuration($scrollEl, 'up');
+        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 2);
         $currentLogo.slideUp();
         $scrollEl.stop().animate({top: '0px'}, duration, 'linear');
         setTimeout(function() {
