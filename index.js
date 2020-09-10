@@ -67,6 +67,12 @@ const getFormAreaScreenshot = async ({page, backgroundType, background, formID})
             document.querySelector('.form-all').style.setProperty('border-radius', '0', 'important');
             document.querySelector('.form-all').style.setProperty('border', '0', 'important');
             document.querySelector('.form-all').style.setProperty('box-shadow', 'none', 'important');
+            
+            // remove footer branding
+            var footerBranding = document.querySelector('.formFooter.f6')
+            if (footerBranding) {
+                footerBranding.parentElement.removeChild(footerBranding);
+            }
         });
         
         const form = await page.$('.form-all');

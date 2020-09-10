@@ -1,34 +1,42 @@
 var colorList = ["#FFCFA4", "#FFD8CF", "#FDDAF3", "#E0D2FF", "#C3F0EB", "#D7EFFC", "#DAF5C9", "#EDE8C3", "#FAD5B4", "#DEE5F2", "#B2E1EF", "#FFE1D0", "#F4CBFF", "#DEE3FF", "#F1E2B3", "#C5DCFF", "#BEEEC0", "#D5D3FF", "#FFC7C7", "#FFDF8C", "#FFEBB3", "#EDE2FE", "#FEE2D5", "#D0F0FD", "#FFBDC7", "#BFBCFF", "#FFE189", "#D1F7C4", "#B5F2EB", "#F8DCD6", "#FFC59E", "#AEE5FF"];
 var defaultColors = ['rgba(0, 0, 0, 0)', 'rgb(245, 245, 245)', 'rgb(255, 255, 255)'];
 var defaultSpeed = 0.25;
+var maxScrollableDistance = 1000;
 
-var getInitialBottomOfImage = function (image) {
-    var $wrapperEl = $(image).closest('.template-wrapper');
-    return $wrapperEl.height() - image.getBoundingClientRect().height;
+var getScrollableHightOfElement = function ($element, withoutLimit) {
+    var $wrapperEl = $element.closest('.template-wrapper');
+    var distance = $element.height() - $wrapperEl.height();
+    distance = !withoutLimit && distance >= maxScrollableDistance ? maxScrollableDistance : distance;
+    return -distance;
 };
-var onImgLoaded = function () {
-    this.style.bottom = getInitialBottomOfImage(this) + 'px';
+
+var calculateDuration = function ($element, direction, speed) {
+    var distance = Math.abs(getScrollableHightOfElement($element));
+    var currentPosition = Math.abs(parseFloat($element.css('top').slice(0, -2)));
+    var dx = direction === 'up' ? currentPosition : distance - currentPosition;
+    return Math.floor(dx / (speed || defaultSpeed));
 };
-var calculateMaxDuration = function (image, speed) {
-    return image.getBoundingClientRect().height / (speed || defaultSpeed);
-};
-var calculateDuration = function (image, direction, speed) {
-    var imageHeight = image.getBoundingClientRect().height;
-    var currentBottom = Math.abs(parseFloat(image.style.bottom.slice(0, -2)));
-    var maxDuration = calculateMaxDuration(image, speed);
-    var dx = direction === 'up' ? imageHeight - currentBottom : currentBottom;
-    return Math.floor((dx * maxDuration) / imageHeight);
+
+var onImgLoaded = function() {
+    var imageHeight = $(this).height();
+    var paddingTop = imageHeight < 210 ? (254 - imageHeight) / 2 : null;
+    if(paddingTop) {
+        $(this).closest('.template-bg').css('padding-top', paddingTop + 'px');
+    }
 };
 
 $.each(window.results, function (i, result) {
     var $a = $('<a href="https://www.jotform.com/' + result.formID + '" target="_blank"></a>');
     var $backgroundEl = $('<div class="template-bg"></div>');
     var backgroundEl = $backgroundEl.get(0);
-    var $wrapperEl = $('<div class="template-wrapper"></div>');
-    var $image = $('<img class="template-form" src="../' + result.form + '" alt="" />').load(onImgLoaded);
     $a.append($backgroundEl);
+    
+    var $wrapperEl = $('<div class="template-wrapper"></div>');
     $backgroundEl.append($wrapperEl);
+    
+    var $image = $('<img class="template-form" src="../' + result.form + '" alt="" />').load(onImgLoaded);
     $wrapperEl.append($image);
+    
     $('#container').append($a);
     
     if (result.backgroundType === 'image') {
@@ -42,16 +50,14 @@ $.each(window.results, function (i, result) {
     }
     
     $backgroundEl.mouseenter(function () {
-        var $currentImage = $(this).find('img');
-        var currentImage = $currentImage[0];
-        var firstBottom = getInitialBottomOfImage(currentImage);
-        var duration = calculateDuration(currentImage, 'down');
-        $currentImage.stop()
-            .animate({bottom: '0'}, duration, 'linear', function () {
-                    console.log('DONE!!!');
+        var $scrollEl = $(this).find('img');
+        var topValue = getScrollableHightOfElement($scrollEl);
+        var duration = calculateDuration($scrollEl, 'down');
+        $scrollEl.stop()
+            .animate({top: topValue + 'px'}, duration, 'linear', function () {
                     setTimeout(
                         function () {
-                            $currentImage.animate({bottom: firstBottom}, duration, 'linear');
+                            $scrollEl.animate({top: '0px'}, duration, 'linear');
                         },
                         1000
                     );
@@ -60,20 +66,18 @@ $.each(window.results, function (i, result) {
     });
     
     $backgroundEl.mouseleave(function () {
-        var $currentImage = $(this).find('img');
-        var currentImage = $currentImage[0];
-        var firstBottom = getInitialBottomOfImage(currentImage);
-        var duration = calculateDuration(currentImage, 'up', defaultSpeed * 2);
-        $currentImage.stop().animate({bottom: firstBottom}, duration, 'linear');
+        var $scrollEl = $(this).find('img');
+        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 2);
+        $scrollEl.stop().animate({top: '0px'}, duration, 'linear');
     });
     
     backgroundEl.addEventListener('wheel', function (event) {
         event.preventDefault();
-        var $currentImage = $(this).find('img');
-        var bottomValue = parseFloat($currentImage.stop().css('bottom').slice(0, -2));
-        var calculatedBottomValue = bottomValue + (5 * event.deltaY);
-        calculatedBottomValue = calculatedBottomValue > 0 ? 0 : calculatedBottomValue;
-        calculatedBottomValue = calculatedBottomValue < getInitialBottomOfImage($currentImage[0]) ? getInitialBottomOfImage($currentImage[0]) : calculatedBottomValue;
-        $currentImage.css({bottom: calculatedBottomValue + 'px'});
+        var $scrollEl = $(this).find('img');
+        var topValue = parseFloat($scrollEl.stop().css('top').slice(0, -2));
+        var calculatedTopValue = topValue - (2 * event.deltaY);
+        calculatedTopValue = calculatedTopValue > 0 ? 0 : calculatedTopValue;
+        calculatedTopValue = calculatedTopValue < getScrollableHightOfElement($scrollEl, true) ? getScrollableHightOfElement($scrollEl, true) : calculatedTopValue;
+        $scrollEl.css({top: calculatedTopValue + 'px'});
     });
 });
