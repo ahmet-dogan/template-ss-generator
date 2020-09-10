@@ -215,6 +215,22 @@ body {
     overflow: hidden;
 }
 
+.template-logo-container {
+    height: 40px;
+    width: 100px;
+    margin: auto auto;
+    display: none;
+}
+
+.template-logo {
+    text-align: center;
+    padding-top: 10px;
+    box-sizing: border-box;
+    border: 2px solid;
+    height: 100%;
+    display: none;
+}
+
 .template-wrapper{
     position: relative;
     max-height: 100%;

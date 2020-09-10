@@ -201,6 +201,11 @@ body {
     padding: 0 180px;
 }
 
+#container a{
+    display: inline-block;
+    margin: 60px 40px;
+}
+
 .template-bg{
     width: 340px;
     height: 254px;
@@ -208,8 +213,6 @@ body {
     padding: 22px;
     box-sizing: border-box;
     overflow: hidden;
-    display: inline-block;
-    margin: 60px 40px;
     transition: padding .2s;
     position: relative;
 }
