@@ -90,8 +90,12 @@ $.each(window.results, function (i, result) {
         var $scrollEl = $(this).find('.template-content');
         var topValue = parseFloat($scrollEl.stop().css('top').slice(0, -2));
         var calculatedTopValue = topValue - (2 * event.deltaY);
+        var firstCalculatedTopValue = calculatedTopValue;
         calculatedTopValue = calculatedTopValue > 0 ? 0 : calculatedTopValue;
         calculatedTopValue = calculatedTopValue < getScrollableHightOfElement($scrollEl, true) ? getScrollableHightOfElement($scrollEl, true) : calculatedTopValue;
-        $scrollEl.css({top: calculatedTopValue + 'px'});
+        if(firstCalculatedTopValue == calculatedTopValue) {
+            event.preventDefault();
+            $scrollEl.css({top: calculatedTopValue + 'px'});
+        }
     });
 });
