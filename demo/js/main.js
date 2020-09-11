@@ -67,7 +67,7 @@ $.each(window.results, function (i, result) {
     
     $backgroundEl.mouseleave(function () {
         var $scrollEl = $(this).find('img');
-        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 2);
+        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 6);
         $scrollEl.stop().animate({top: '0px'}, duration, 'linear');
     });
     

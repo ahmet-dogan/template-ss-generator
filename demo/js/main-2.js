@@ -77,7 +77,7 @@ $.each(window.results, function (i, result) {
         $this.attr('stop-animation', true);
         var $scrollEl = $this.find('.template-content');
         var $currentLogo = $this.find('.template-logo');
-        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 2);
+        var duration = calculateDuration($scrollEl, 'up', defaultSpeed * 6);
         $currentLogo.slideUp();
         $scrollEl.stop().animate({top: '0px'}, duration, 'linear');
         setTimeout(function () {
