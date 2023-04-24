@@ -7,10 +7,10 @@
     "serve": "serve -l 1234"
   },
   "dependencies": {
-    "puppeteer": "^5.2.1",
-    "sharp": "^0.26.0"
+    "puppeteer": "19.10.1",
+    "sharp": "0.32.0"
   },
   "devDependencies": {
-    "serve": "^11.3.2"
+    "serve": "14.2.0"
   }
 }
